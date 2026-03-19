@@ -72,8 +72,24 @@
     const socket = io(); 
     let currentColor = '#FF595E'; 
     const cells = []; 
-    // 👇 新增一個前端專屬的記憶體，記錄每個格子「真正的 Hex 色碼」
     const localBoardState = new Array(40).fill('white'); 
+
+    // 👇 1. 網頁一打開，立刻跳出輸入框問房間名稱
+    let roomName = prompt("請輸入你想加入的房號 (例如: 123, apple):", "123");
+    
+    // 如果玩家按了取消或什麼都沒填，就預設給他一個大廳
+    if (!roomName) {
+      roomName = "大廳"; 
+    }
+
+    // 👇 2. 把網頁最上面的標題 H2，改成顯示目前的房號
+    document.querySelector('h2').innerText = `目前在房間：${roomName}`;
+
+    // 👇 3. 告訴伺服器：「我要加入這個房間！」
+    socket.emit('join_room', roomName);
+
+
+    // --- 以下是原本的邏輯，完全沒變 ---
 
     function selectColor(clickedElement, colorCode) {
       currentColor = colorCode;
@@ -91,16 +107,11 @@
       cell.classList.add('cell');
       cells.push(cell); 
 
-      // 👇 修改點擊邏輯
       cell.onclick = function() {
-        let colorToSend = currentColor; // 預設要送出的顏色是手上的畫筆
-
-        // 判斷：如果這個格子現在的顏色，跟我們手上的畫筆顏色一模一樣
+        let colorToSend = currentColor; 
         if (localBoardState[i] === currentColor) {
-          colorToSend = 'white'; // 那就把要送出的顏色改成白色（當作擦除）
+          colorToSend = 'white'; 
         }
-
-        // 發送給伺服器
         socket.emit('change_color', { index: i, color: colorToSend });
       };
 
@@ -110,19 +121,19 @@
     socket.on('init_board', (boardState) => {
       for (let i = 0; i < 40; i++) {
         cells[i].style.backgroundColor = boardState[i];
-        localBoardState[i] = boardState[i]; // 👇 同步更新前端的記憶
+        localBoardState[i] = boardState[i]; 
       }
     });
 
     socket.on('update_color', (data) => {
       cells[data.index].style.backgroundColor = data.color;
-      localBoardState[data.index] = data.color; // 👇 同步更新前端的記憶
+      localBoardState[data.index] = data.color; 
     });
 
     socket.on('clear_board', () => {
       for (let i = 0; i < 40; i++) {
         cells[i].style.backgroundColor = 'white';
-        localBoardState[i] = 'white'; // 👇 同步更新前端的記憶
+        localBoardState[i] = 'white'; 
       }
     });
   </script>
