@@ -35,6 +35,9 @@ io.on('connection', (socket) => {
   });
 });
 
-http.listen(3000, () => {
-  console.log('伺服器已啟動，請打開瀏覽器輸入 http://localhost:3000');
+// 讓雲端決定 Port，如果是在本機測試才用 3000
+const PORT = process.env.PORT || 3000; 
+
+http.listen(PORT, () => {
+  console.log(`伺服器已啟動，正在監聽 Port ${PORT} 🚀`);
 });
