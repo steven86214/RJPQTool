@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>我們的共創塗鴉牆</title>
+  <style>
+    :root {
+      --cell-size: 6.5vh; 
+      --gap-size: 0.8vh;  
+    }
+
+    body { 
+      font-family: sans-serif; display: flex; flex-direction: column; align-items: center; 
+      margin-top: 3vh; overflow: hidden; background-color: #f7f7f7;
+    }
+    h2 { margin-top: 0; margin-bottom: 2vh; font-size: 3vh; }
+
+    /* --- 顏色選擇區 --- */
+    .palette { 
+      display: flex; gap: 2vh; margin-bottom: 2vh; align-items: center;
+    }
+    .color-btn { 
+      width: 5vh; height: 5vh; border-radius: 50%; border: 3px solid transparent; 
+      cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .color-btn.selected { 
+      border: 3px solid #333; transform: scale(1.2); 
+    }
+
+    /* 👇 新增的清空按鈕樣式 */
+    .clear-btn {
+      height: 5vh; padding: 0 2vh; border-radius: 2.5vh; border: none;
+      background-color: #ff4d4f; color: white; font-size: 2vh; font-weight: bold;
+      cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s;
+      margin-left: 2vh; /* 跟顏色按鈕稍微拉開一點距離 */
+    }
+    .clear-btn:hover { background-color: #ff7875; transform: scale(1.05); }
+    .clear-btn:active { transform: scale(0.95); }
+
+    /* --- 網格區 --- */
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(4, var(--cell-size));  
+      grid-template-rows: repeat(10, var(--cell-size));    
+      gap: var(--gap-size); background-color: #ddd; border: 4px solid #999; 
+      padding: 1.5vh; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .cell { 
+      background-color: white; width: 100%; height: 100%; cursor: pointer; 
+      border-radius: 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); transition: opacity 0.1s;
+    }
+    .cell:hover { opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+  <h2>選擇顏色並點擊格子！</h2>
+
+  <div class="palette">
+    <div class="color-btn selected" style="background-color: #FF595E;" onclick="selectColor(this, '#FF595E')"></div>
+    <div class="color-btn" style="background-color: #FFCA3A;" onclick="selectColor(this, '#FFCA3A')"></div>
+    <div class="color-btn" style="background-color: #8AC926;" onclick="selectColor(this, '#8AC926')"></div>
+    <div class="color-btn" style="background-color: #1982C4;" onclick="selectColor(this, '#1982C4')"></div>
+    
+    <button class="clear-btn" onclick="clearBoard()">清空全部</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io(); 
+    let currentColor = '#FF595E'; 
+    const cells = []; 
+    // 👇 新增一個前端專屬的記憶體，記錄每個格子「真正的 Hex 色碼」
+    const localBoardState = new Array(40).fill('white'); 
+
+    function selectColor(clickedElement, colorCode) {
+      currentColor = colorCode;
+      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+      clickedElement.classList.add('selected');
+    }
+
+    function clearBoard() {
+      socket.emit('clear_board');
+    }
+
+    const gridContainer = document.getElementById('grid');
+    for (let i = 0; i < 40; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cells.push(cell); 
+
+      // 👇 修改點擊邏輯
+      cell.onclick = function() {
+        let colorToSend = currentColor; // 預設要送出的顏色是手上的畫筆
+
+        // 判斷：如果這個格子現在的顏色，跟我們手上的畫筆顏色一模一樣
+        if (localBoardState[i] === currentColor) {
+          colorToSend = 'white'; // 那就把要送出的顏色改成白色（當作擦除）
+        }
+
+        // 發送給伺服器
+        socket.emit('change_color', { index: i, color: colorToSend });
+      };
+
+      gridContainer.appendChild(cell);
+    }
+
+    socket.on('init_board', (boardState) => {
+      for (let i = 0; i < 40; i++) {
+        cells[i].style.backgroundColor = boardState[i];
+        localBoardState[i] = boardState[i]; // 👇 同步更新前端的記憶
+      }
+    });
+
+    socket.on('update_color', (data) => {
+      cells[data.index].style.backgroundColor = data.color;
+      localBoardState[data.index] = data.color; // 👇 同步更新前端的記憶
+    });
+
+    socket.on('clear_board', () => {
+      for (let i = 0; i < 40; i++) {
+        cells[i].style.backgroundColor = 'white';
+        localBoardState[i] = 'white'; // 👇 同步更新前端的記憶
+      }
+    });
+  </script>
+</body>
+</html>
