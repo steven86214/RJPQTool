@@ -209,8 +209,8 @@
     for (let row = 1; row <= 10; row++) {
       const label = document.createElement('div');
       label.className = 'row-label';
-      label.innerText = row;
-      gridContainer.appendChild(label);
+// 💡 利用 11 減去目前的行數，就能讓原本的 1~10 變成 10~1
+      label.innerText = 11 - row;      gridContainer.appendChild(label);
 
       for (let col = 0; col < 4; col++) {
         const cell = document.createElement('div');
