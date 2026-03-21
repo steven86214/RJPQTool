@@ -63,3 +63,12 @@ const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
   console.log(`伺服器已啟動，正在監聽 Port ${PORT} 🚀`);
 });
+// 替換成你 Render 上的真實專屬網址喔！
+const MY_RENDER_URL = 'https://rjpqtool.onrender.com/'; 
+
+// 設定每 14 分鐘 (14 * 60 * 1000 毫秒) 自己發送一次請求
+setInterval(() => {
+  fetch(MY_RENDER_URL)
+    .then(res => console.log(`[喚醒機器人] 成功戳了一下伺服器，狀態: ${res.status}`))
+    .catch(err => console.log(`[喚醒機器人] 戳伺服器失敗: ${err.message}`));
+}, 4 * 60 * 1000);
