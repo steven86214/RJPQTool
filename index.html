@@ -2,78 +2,150 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>羅茱組隊任務小工具</title>
+  <title>我們的暗色共創塗鴉牆</title>
   <style>
+    /* --- 1. 全域變數與暗色系設定 --- */
     :root {
-      --cell-size: 6.5vh; 
-      --gap-size: 0.8vh;  
+      /* 💡 改變格子比例：寬度設為 7vh，高度設為 4vh，看起來更像長方形 */
+      --cell-width: 7vh; 
+      --cell-height: 4vh;
+      --gap-size: 0.6vh;  
+      
+      /* 暗色系色調 */
+      --bg-color: #1a1a1a;       /* 整個網頁的背景 */
+      --panel-bg: #2d2d2d;       /* 調色盤和網格的背景 */
+      --text-color: #eee;        /* 主要文字顏色 */
+      --label-color: #888;       /* 數字標籤顏色 */
+      --border-color: #444;      /* 網格邊框顏色 */
     }
 
     body { 
-      font-family: sans-serif; display: flex; flex-direction: column; align-items: center; 
-      margin-top: 3vh; overflow: hidden; background-color: #f7f7f7;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 使用更現代的字體 */
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      margin-top: 2vh; 
+      overflow: hidden; 
+      background-color: var(--bg-color); /* 應用暗色背景 */
+      color: var(--text-color);           /* 應用亮色文字 */
     }
-    h2 { margin-top: 0; margin-bottom: 2vh; font-size: 3vh; }
 
-    /* --- 顏色選擇區 --- */
-    .palette { 
-      display: flex; gap: 2vh; margin-bottom: 2vh; align-items: center;
+    h2 { 
+      margin-top: 0; 
+      margin-bottom: 2vh; 
+      font-size: 3.5vh; 
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3); /* 幫標題加點立體感 */
     }
+
+    /* --- 2. 美化的調色盤區 --- */
+    .palette-panel {
+      background-color: var(--panel-bg);
+      padding: 1.5vh 3vh;
+      border-radius: 10vh; /* 超圓角，像一個太空艙 */
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* 更深的陰影 */
+      display: flex; 
+      gap: 2.5vh; 
+      margin-bottom: 3vh; 
+      align-items: center;
+      border: 1px solid #3d3d3d;
+    }
+
     .color-btn { 
-      width: 5vh; height: 5vh; border-radius: 50%; border: 3px solid transparent; 
-      cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      width: 5vh; 
+      height: 5vh; 
+      border-radius: 50%; 
+      border: 3px solid transparent; 
+      cursor: pointer; 
+      transition: all 0.2s ease; 
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 2px 5px rgba(0,0,0,0.5);
     }
+    
+    /* 滑鼠懸停時微凸 */
+    .color-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* 選取時加上明顯的亮色外框和縮放 */
     .color-btn.selected { 
-      border: 3px solid #333; transform: scale(1.2); 
+      border: 3px solid #fff; 
+      transform: scale(1.15) translateY(-2px); 
+      box-shadow: 0 4px 10px rgba(255,255,255,0.3);
     }
 
-    /* 👇 新增的清空按鈕樣式 */
+    /* 重新設計的清空按鈕 */
     .clear-btn {
-      height: 5vh; padding: 0 2vh; border-radius: 2.5vh; border: none;
-      background-color: #ff4d4f; color: white; font-size: 2vh; font-weight: bold;
-      cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s;
-      margin-left: 2vh; /* 跟顏色按鈕稍微拉開一點距離 */
+      height: 5vh; 
+      padding: 0 3vh; 
+      border-radius: 2.5vh; 
+      border: none;
+      background: linear-gradient(145deg, #ff4d4f, #d9363e); /* 漸層色，更有質感 */
+      color: white; 
+      font-size: 2vh; 
+      font-weight: bold;
+      cursor: pointer; 
+      box-shadow: 0 3px 6px rgba(0,0,0,0.4); 
+      transition: all 0.2s ease;
+      margin-left: 2vh;
+      text-transform: uppercase; /* 大寫字母，更有設計感 */
+      letter-spacing: 1px;
     }
-    .clear-btn:hover { background-color: #ff7875; transform: scale(1.05); }
-    .clear-btn:active { transform: scale(0.95); }
+    .clear-btn:hover { 
+      background: linear-gradient(145deg, #ff7875, #ff4d4f);
+      box-shadow: 0 5px 12px rgba(255,77,79,0.4); 
+      transform: translateY(-1px);
+    }
+    .clear-btn:active { 
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
 
-    /* --- 網格區 --- */
-    /* --- 修改網格區 --- */
+    /* --- 3. 暗色網格區 --- */
     .grid { 
       display: grid; 
-      /* 💡 關鍵改變：前面多加一個 3vh 寬度的空間來放數字，後面維持 4 個格子 */
-      grid-template-columns: 3vh repeat(4, var(--cell-size));  
-      grid-template-rows: repeat(10, var(--cell-size));    
+      /* 💡 使用新的寬高變數：前面 3vh 放數字，後面 4 個長方形格子 */
+      grid-template-columns: 3vh repeat(4, var(--cell-width));  
+      grid-template-rows: repeat(10, var(--cell-height));    
       gap: var(--gap-size); 
-      background-color: #ddd; 
-      border: 4px solid #999; 
+      background-color: var(--panel-bg); /* 深色背景 */
+      border: 2px solid var(--border-color); /* 深色邊框 */
       padding: 1.5vh; 
-      border-radius: 8px; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 12px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6); /* 更強烈的立體陰影 */
     }
 
-    /* 👇 新增這個數字標籤的樣式 */
+    .cell { 
+      background-color: #fff; /* 格子本身還是白底 */
+      width: 100%; 
+      height: 100%; 
+      cursor: pointer; 
+      border-radius: 4px; 
+      /* 💡 移除格子的陰影，讓它們看起來更乾淨，像一張紙 */
+      border: 1px solid rgba(0,0,0,0.05); /* 極淡的邊框線，區分格子 */
+      transition: all 0.1s ease;
+    }
+    
+    /* 懸停時，讓格子微亮 */
+    .cell:hover { 
+      filter: brightness(0.9);
+      transform: scale(1.02);
+    }
+
     .row-label {
       display: flex;
-      align-items: center;       /* 上下置中 */
-      justify-content: center;   /* 左右置中 */
+      align-items: center; 
+      justify-content: center; 
       font-weight: bold;
-      color: #555;
-      font-size: 2.5vh;
-      user-select: none;         /* 避免點擊時反白到數字 */
+      color: var(--label-color); /* 應用亮灰色數字 */
+      font-size: 2.2vh;
+      user-select: none; 
     }
-    .cell { 
-      background-color: white; width: 100%; height: 100%; cursor: pointer; 
-      border-radius: 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); transition: opacity 0.1s;
-    }
-    .cell:hover { opacity: 0.7; }
   </style>
 </head>
 <body>
 
-  <h2>選擇顏色並點擊格子！</h2>
+  <h2>我們的暗色共創塗鴉牆</h2>
 
-  <div class="palette">
+  <div class="palette-panel">
     <div class="color-btn selected" style="background-color: #FF595E;" onclick="selectColor(this, '#FF595E')"></div>
     <div class="color-btn" style="background-color: #FFCA3A;" onclick="selectColor(this, '#FFCA3A')"></div>
     <div class="color-btn" style="background-color: #8AC926;" onclick="selectColor(this, '#8AC926')"></div>
@@ -91,22 +163,13 @@
     const cells = []; 
     const localBoardState = new Array(40).fill('white'); 
 
-    // 👇 1. 網頁一打開，立刻跳出輸入框問房間名稱
     let roomName = prompt("請輸入你想加入的房號 (例如: 123, apple):", "123");
-    
-    // 如果玩家按了取消或什麼都沒填，就預設給他一個大廳
-    if (!roomName) {
-      roomName = "大廳"; 
-    }
+    if (!roomName) { roomName = "大廳"; }
 
-    // 👇 2. 把網頁最上面的標題 H2，改成顯示目前的房號
     document.querySelector('h2').innerText = `目前在房間：${roomName}`;
-
-    // 👇 3. 告訴伺服器：「我要加入這個房間！」
     socket.emit('join_room', roomName);
 
-
-    // --- 以下是原本的邏輯，完全沒變 ---
+    // --- 以下邏輯完全沒變，依然維持 1~10 數字與 40 格子的雙重迴圈 ---
 
     function selectColor(clickedElement, colorCode) {
       currentColor = colorCode;
@@ -115,29 +178,28 @@
     }
 
     function clearBoard() {
-      socket.emit('clear_board');
+      // 加上一個確認視窗，避免誤點
+      if(confirm('確定要清空這個房間的畫布嗎？')) {
+        socket.emit('clear_board');
+      }
     }
-    const gridContainer = document.getElementById('grid');
-    let cellIndex = 0; // 用來記住目前是第幾個格子 (0~39)
 
-    // 總共 10 列
+    const gridContainer = document.getElementById('grid');
+    let cellIndex = 0; 
+
     for (let row = 1; row <= 10; row++) {
-      // 1. 先在每一列的最前面，塞入數字標籤 (1~10)
       const label = document.createElement('div');
       label.className = 'row-label';
       label.innerText = row;
       gridContainer.appendChild(label);
 
-      // 2. 接著塞入這一列的 4 個格子
       for (let col = 0; col < 4; col++) {
         const cell = document.createElement('div');
         cell.classList.add('cell');
         
-        // 💡 為了避免閉包問題，我們把當下的格子編號存起來
         let currentIndex = cellIndex; 
         cells.push(cell); 
 
-        // 點擊事件：跟伺服器溝通依然是用 0~39 的編號
         cell.onclick = function() {
           let colorToSend = currentColor; 
           if (localBoardState[currentIndex] === currentColor) {
@@ -147,8 +209,6 @@
         };
 
         gridContainer.appendChild(cell);
-        
-        // 這一格處理完，編號加 1，準備處理下一格
         cellIndex++; 
       }
     }
@@ -172,5 +232,6 @@
       }
     });
   </script>
+
 </body>
 </html>
