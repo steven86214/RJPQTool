@@ -5,162 +5,162 @@
   <title>羅茱小工具</title>
   <style>
     /* --- 1. 全域變數與暗色系設定 --- */
+    /* --- 1. 全域變數與暗色系設定 --- */
     :root {
-      /* 💡 改變格子比例與大小：格子大幅變大，看起來與按鈕比例更協調 */
-      --cell-width: 10vh;   /* 寬度從 7vh 增加到 10vh */
-      --cell-height: 7vh;  /* 高度從 4vh 增加到 7vh */
-      --gap-size: 1.2vh;    /* 間距稍微增加 */
-      
-      /* 暗色系色調 */
-      --bg-color: #1a1a1a;       /* 整個網頁的背景 */
-      --panel-bg: #2d2d2d;       /* 調色盤和網格的背景 */
-      --text-color: #eee;        /* 主要文字顏色 */
-      --label-color: #888;       /* 數字標籤顏色 */
-      --border-color: #444;      /* 網格邊框顏色 */
+      --cell-width: 8vh;    /* 原本是 10vh，稍微縮小 */
+      --cell-height: 4vh; /* 💡 關鍵：原本是 7vh，改矮一點讓比例更好 */
+      --gap-size: 2vh;    
+      --bg-color: #1a1a1a;       
+      --panel-bg: #2d2d2d;       
+      --text-color: #eee;        
+      --label-color: #888;       
+      --border-color: #444;      
     }
 
     body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 使用更現代的字體 */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
       display: flex; 
       flex-direction: column; 
       align-items: center; 
-      margin-top: 2vh; 
+      justify-content: center; /* 讓整個塗鴉牆在螢幕垂直置中 */
+      height: 100vh;           
+      margin: 0;               /* 移除多餘的上方空白 */
       overflow: hidden; 
-      background-color: var(--bg-color); /* 應用暗色背景 */
-      color: var(--text-color);           /* 應用亮色文字 */
+      background-color: var(--bg-color); 
+      color: var(--text-color);           
     }
 
     h2 { 
       margin-top: 0; 
       margin-bottom: 2vh; 
       font-size: 3.5vh; 
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3); /* 幫標題加點立體感 */
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3); 
     }
+
+    /* --- 登入房間專屬遮罩與視窗 --- */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);      
+      display: flex; justify-content: center; align-items: center;
+      z-index: 9999; 
+    }
+    
+    .modal-box {
+      background-color: var(--panel-bg); padding: 4vh 5vh; border-radius: 2vh;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8); text-align: center;
+      border: 1px solid var(--border-color);
+    }
+    
+    .modal-box h3 { margin-top: 0; color: white; font-size: 3.5vh; margin-bottom: 1vh; }
+    
+    .modal-box input {
+      width: 80%; padding: 1.5vh; font-size: 2.5vh; margin: 3vh 0; border-radius: 1vh; 
+      border: none; text-align: center; background: #444; color: white; outline: none;
+    }
+    
+    .modal-box input:focus { border: 2px solid #1982C4; }
+
+    .modal-box input[type="number"]::-webkit-inner-spin-button,
+    .modal-box input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none; margin: 0;
+    }
+    .modal-box input[type="number"] { -moz-appearance: textfield; }
+    
+    .modal-box button {
+      background: linear-gradient(145deg, #1982C4, #13669a); color: white; border: none; 
+      padding: 1.5vh 4vh; font-size: 2.5vh; border-radius: 3vh; cursor: pointer;
+      font-weight: bold; transition: all 0.2s;
+    }
+    
+    .modal-box button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(25, 130, 196, 0.4); }
 
     /* --- 2. 美化的調色盤區 --- */
     .palette-panel {
-      background-color: var(--panel-bg);
-      padding: 1.5vh 3vh;
-      border-radius: 10vh; /* 超圓角，像一個太空艙 */
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* 更深的陰影 */
-      display: flex; 
-      gap: 2.5vh; 
-      margin-bottom: 3vh; 
-      align-items: center;
-      border: 1px solid #3d3d3d;
+      background-color: var(--panel-bg); padding: 1.5vh 3vh; border-radius: 10vh; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; gap: 2.5vh; 
+      margin-bottom: 3vh; align-items: center; border: 1px solid #3d3d3d;
     }
 
     .color-btn { 
-      width: 5vh; 
-      height: 5vh; 
-      border-radius: 50%; 
-      border: 3px solid transparent; 
-      cursor: pointer; 
-      transition: all 0.2s ease; 
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 2px 5px rgba(0,0,0,0.5);
+      width: 5vh; height: 5vh; border-radius: 50%; border: 3px solid transparent; 
+      cursor: pointer; transition: all 0.2s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 2px 5px rgba(0,0,0,0.5);
     }
     
-    /* 滑鼠懸停時微凸 */
-    .color-btn:hover {
-      transform: translateY(-2px);
-    }
-
-    /* 選取時加上明顯的亮色外框和縮放 */
+    .color-btn:hover { transform: translateY(-2px); }
     .color-btn.selected { 
-      border: 3px solid #fff; 
-      transform: scale(1.15) translateY(-2px); 
+      border: 3px solid #fff; transform: scale(1.15) translateY(-2px); 
       box-shadow: 0 4px 10px rgba(255,255,255,0.3);
     }
 
-    /* 重新設計的清空按鈕 */
     .clear-btn {
-      height: 5vh; 
-      padding: 0 3vh; 
-      border-radius: 2.5vh; 
-      border: none;
-      background: linear-gradient(145deg, #ff4d4f, #d9363e); /* 漸層色，更有質感 */
-      color: white; 
-      font-size: 2vh; 
-      font-weight: bold;
-      cursor: pointer; 
-      box-shadow: 0 3px 6px rgba(0,0,0,0.4); 
-      transition: all 0.2s ease;
-      margin-left: 2vh;
-      text-transform: uppercase; /* 大寫字母，更有設計感 */
-      letter-spacing: 1px;
+      height: 5vh; padding: 0 3vh; border-radius: 2.5vh; border: none;
+      background: linear-gradient(145deg, #ff4d4f, #d9363e); color: white; font-size: 2vh; 
+      font-weight: bold; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.4); 
+      transition: all 0.2s ease; margin-left: 2vh; text-transform: uppercase; letter-spacing: 1px;
     }
-    .clear-btn:hover { 
-      background: linear-gradient(145deg, #ff7875, #ff4d4f);
-      box-shadow: 0 5px 12px rgba(255,77,79,0.4); 
-      transform: translateY(-1px);
-    }
-    .clear-btn:active { 
-      transform: translateY(1px);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-    }
+    .clear-btn:hover { background: linear-gradient(145deg, #ff7875, #ff4d4f); box-shadow: 0 5px 12px rgba(255,77,79,0.4); transform: translateY(-1px); }
+    .clear-btn:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
 
     /* --- 3. 暗色網格區 --- */
     .grid { 
       display: grid; 
-      /* 💡 寬度增加：前面 4vh 放數字，後面 4 個長方形格子，每個 10vh */
       grid-template-columns: 4vh repeat(4, var(--cell-width));  
-      grid-template-rows: repeat(10, var(--cell-height));    
-      /* 💡 移除網格間距，改用分隔線與內邊距控制 */
-      gap: 0; 
-      background-color: var(--panel-bg); /* 深色背景 */
-      border: 2px solid var(--border-color); /* 深色邊框 */
-      padding: 1.5vh; 
+      grid-template-rows: repeat(10, auto);    
+      gap: 0; /* 排版交給裡面的元素自己處理 */
+      background-color: var(--panel-bg); 
+      border: 2px solid var(--border-color); 
+      padding: 1.5vh 2.5vh; /* 稍微增加左右內邊距 */
       border-radius: 12px; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6); /* 更強烈的立體陰影 */
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6); 
     }
 
-    /* 👇 應用於所有行元素（標籤和格子）的樣式，用於添加分隔線和垂直間距 */
+    /* 💡 這是外包裝和數字標籤：負責完美置中與畫分隔線 */
     .grid > * {
-      /* 👇 在每一列下方加上淺色分隔線 */
+      display: flex;
+      align-items: center;      
+      justify-content: center;  
       border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-      /* 👇 增加底部內邊距和外邊距，讓分隔線與內容之間有呼吸空間 */
-      padding-bottom: calc(var(--gap-size) / 2);     
-      margin-bottom: calc(var(--gap-size) / 2);      
+      /* 👇 把原本的 1.5vh 改成 0.6vh，讓線貼近格子但又不碰到 */
+      padding-bottom: 0.6vh;    
+      /* 👇 把原本的 1.5vh 改成 0.6vh，縮小與下一列的距離 */
+      margin-bottom: 0.6vh;     
     }
 
-    /* 👇 為每個格子單獨添加水平間距和圓角，移除內陰影，保持乾淨 */
+    /* 最後一列不需要分隔線 */
+    .grid > *:nth-last-child(-n+5) { 
+      border-bottom: none; padding-bottom: 0; margin-bottom: 0;
+    }
+
+    /* 💡 格子本身：卸下排版重擔，只負責顯示顏色跟特效 */
     .cell { 
-      background-color: #fff; /* 格子本身還是白底 */
+      width: 85%; /* 稍微縮小，產生左右的間隙 */
+      height: var(--cell-height); 
+      background-color: #fff; 
       cursor: pointer; 
-      border-radius: 6px; /* 圓角稍微增加 */
-      /* 💡 移除原本單調的邊框，讓格子看起來更乾淨 */
-      border: 1px solid rgba(0,0,0,0.05); /* 極淡的邊框線，區分格子 */
+      border-radius: 6px; 
+      border: 1px solid rgba(0,0,0,0.05); 
       transition: all 0.1s ease;
-      margin-left: calc(var(--gap-size) / 4); /* 增加水平間距 */
-      margin-right: calc(var(--gap-size) / 4);
     }
     
-    /* 滑鼠懸停時微亮 */
-    .cell:hover { 
-      filter: brightness(0.9);
-      transform: scale(1.02);
-    }
-
-    /* 👇 移除最後一行的分隔線和垂直間距 */
-    .grid > *:nth-last-child(-n+5) { /* 1 個標籤 + 4 個格子 = 5 個元素 */
-      border-bottom: none;
-      padding-bottom: 0;
-      margin-bottom: 0;
-    }
+    .cell:hover { filter: brightness(0.9); transform: scale(1.02); }
 
     .row-label {
-      display: flex;
-      align-items: center; 
-      justify-content: center; 
-      font-weight: bold;
-      color: var(--label-color); /* 應用亮灰色數字 */
-      font-size: 2.5vh; /* 數字變大 */
+      font-weight: bold; color: var(--label-color); font-size: 2.5vh; 
       user-select: none; 
-      margin-right: calc(var(--gap-size) / 2); /* 數字與第一列格子拉開一點距離 */
     }
   </style>
 </head>
 <body>
+
+  <div id="room-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>歡迎來到羅茱小工具</h3>
+      <div style="color: #aaa; font-size: 2vh;">請輸入你想加入的房號 (限數字)：</div>
+      <input type="number" id="room-input" value="123" placeholder="例如: 123, 456">
+      <br>
+      <button onclick="enterRoom()">進入房間 🚀</button>
+    </div>
+  </div>
 
   <h2>羅茱小工具</h2>
 
@@ -181,14 +181,15 @@
     let currentColor = '#FF595E'; 
     const cells = []; 
     const localBoardState = new Array(40).fill('white'); 
+    let roomName = "0"; 
 
-    let roomName = prompt("請輸入你想加入的房號 (例如: 123, apple):", "123");
-    if (!roomName) { roomName = "大廳"; }
-
-    document.querySelector('h2').innerText = `目前在房間：${roomName}`;
-    socket.emit('join_room', roomName);
-
-    // --- 以下邏輯完全沒變，依然維持 1~10 數字與 40 格子的雙重迴圈 ---
+    function enterRoom() {
+      const inputVal = document.getElementById('room-input').value.trim();
+      if (inputVal !== "") { roomName = inputVal; } else { roomName = "0"; }
+      document.querySelector('h2').innerText = `目前在房間：${roomName}`;
+      socket.emit('join_room', roomName);
+      document.getElementById('room-modal').style.display = 'none';
+    }
 
     function selectColor(clickedElement, colorCode) {
       currentColor = colorCode;
@@ -197,7 +198,6 @@
     }
 
     function clearBoard() {
-      // 加上一個確認視窗，避免誤點
       if(confirm('確定要清空這個房間的畫布嗎？')) {
         socket.emit('clear_board');
       }
@@ -209,10 +209,15 @@
     for (let row = 1; row <= 10; row++) {
       const label = document.createElement('div');
       label.className = 'row-label';
-// 💡 利用 11 減去目前的行數，就能讓原本的 1~10 變成 10~1
-      label.innerText = 11 - row;      gridContainer.appendChild(label);
+      label.innerText = 11 - row; 
+      gridContainer.appendChild(label);
 
       for (let col = 0; col < 4; col++) {
+        // 💡 魔法在這裡：我們新增了一個隱形的 wrapper (包裝)
+        const wrapper = document.createElement('div');
+        wrapper.className = 'cell-wrapper';
+
+        // 這是真正的格子，把它放進 wrapper 裡面
         const cell = document.createElement('div');
         cell.classList.add('cell');
         
@@ -227,7 +232,8 @@
           socket.emit('change_color', { index: currentIndex, color: colorToSend });
         };
 
-        gridContainer.appendChild(cell);
+        wrapper.appendChild(cell); // 把格子裝進包裝
+        gridContainer.appendChild(wrapper); // 把包裝放進網格
         cellIndex++; 
       }
     }
