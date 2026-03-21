@@ -2,14 +2,14 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>我們的暗色共創塗鴉牆</title>
+  <title>我們的暗色共創塗鴉牆 - UI 升級版</title>
   <style>
     /* --- 1. 全域變數與暗色系設定 --- */
     :root {
-      /* 💡 改變格子比例：寬度設為 7vh，高度設為 4vh，看起來更像長方形 */
-      --cell-width: 7vh; 
-      --cell-height: 4vh;
-      --gap-size: 0.6vh;  
+      /* 💡 改變格子比例與大小：格子大幅變大，看起來與按鈕比例更協調 */
+      --cell-width: 10vh;   /* 寬度從 7vh 增加到 10vh */
+      --cell-height: 7vh;  /* 高度從 4vh 增加到 7vh */
+      --gap-size: 1.2vh;    /* 間距稍微增加 */
       
       /* 暗色系色調 */
       --bg-color: #1a1a1a;       /* 整個網頁的背景 */
@@ -102,10 +102,11 @@
     /* --- 3. 暗色網格區 --- */
     .grid { 
       display: grid; 
-      /* 💡 使用新的寬高變數：前面 3vh 放數字，後面 4 個長方形格子 */
-      grid-template-columns: 3vh repeat(4, var(--cell-width));  
+      /* 💡 寬度增加：前面 4vh 放數字，後面 4 個長方形格子，每個 10vh */
+      grid-template-columns: 4vh repeat(4, var(--cell-width));  
       grid-template-rows: repeat(10, var(--cell-height));    
-      gap: var(--gap-size); 
+      /* 💡 移除網格間距，改用分隔線與內邊距控制 */
+      gap: 0; 
       background-color: var(--panel-bg); /* 深色背景 */
       border: 2px solid var(--border-color); /* 深色邊框 */
       padding: 1.5vh; 
@@ -113,21 +114,38 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.6); /* 更強烈的立體陰影 */
     }
 
+    /* 👇 應用於所有行元素（標籤和格子）的樣式，用於添加分隔線和垂直間距 */
+    .grid > * {
+      /* 👇 在每一列下方加上淺色分隔線 */
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+      /* 👇 增加底部內邊距和外邊距，讓分隔線與內容之間有呼吸空間 */
+      padding-bottom: calc(var(--gap-size) / 2);     
+      margin-bottom: calc(var(--gap-size) / 2);      
+    }
+
+    /* 👇 為每個格子單獨添加水平間距和圓角，移除內陰影，保持乾淨 */
     .cell { 
       background-color: #fff; /* 格子本身還是白底 */
-      width: 100%; 
-      height: 100%; 
       cursor: pointer; 
-      border-radius: 4px; 
-      /* 💡 移除格子的陰影，讓它們看起來更乾淨，像一張紙 */
+      border-radius: 6px; /* 圓角稍微增加 */
+      /* 💡 移除原本單調的邊框，讓格子看起來更乾淨 */
       border: 1px solid rgba(0,0,0,0.05); /* 極淡的邊框線，區分格子 */
       transition: all 0.1s ease;
+      margin-left: calc(var(--gap-size) / 4); /* 增加水平間距 */
+      margin-right: calc(var(--gap-size) / 4);
     }
     
-    /* 懸停時，讓格子微亮 */
+    /* 滑鼠懸停時微亮 */
     .cell:hover { 
       filter: brightness(0.9);
       transform: scale(1.02);
+    }
+
+    /* 👇 移除最後一行的分隔線和垂直間距 */
+    .grid > *:nth-last-child(-n+5) { /* 1 個標籤 + 4 個格子 = 5 個元素 */
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
     }
 
     .row-label {
@@ -136,8 +154,9 @@
       justify-content: center; 
       font-weight: bold;
       color: var(--label-color); /* 應用亮灰色數字 */
-      font-size: 2.2vh;
+      font-size: 2.5vh; /* 數字變大 */
       user-select: none; 
+      margin-right: calc(var(--gap-size) / 2); /* 數字與第一列格子拉開一點距離 */
     }
   </style>
 </head>
