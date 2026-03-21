@@ -38,12 +38,29 @@
     .clear-btn:active { transform: scale(0.95); }
 
     /* --- 網格區 --- */
+    /* --- 修改網格區 --- */
     .grid { 
       display: grid; 
-      grid-template-columns: repeat(4, var(--cell-size));  
+      /* 💡 關鍵改變：前面多加一個 3vh 寬度的空間來放數字，後面維持 4 個格子 */
+      grid-template-columns: 3vh repeat(4, var(--cell-size));  
       grid-template-rows: repeat(10, var(--cell-size));    
-      gap: var(--gap-size); background-color: #ddd; border: 4px solid #999; 
-      padding: 1.5vh; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      gap: var(--gap-size); 
+      background-color: #ddd; 
+      border: 4px solid #999; 
+      padding: 1.5vh; 
+      border-radius: 8px; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 👇 新增這個數字標籤的樣式 */
+    .row-label {
+      display: flex;
+      align-items: center;       /* 上下置中 */
+      justify-content: center;   /* 左右置中 */
+      font-weight: bold;
+      color: #555;
+      font-size: 2.5vh;
+      user-select: none;         /* 避免點擊時反白到數字 */
     }
     .cell { 
       background-color: white; width: 100%; height: 100%; cursor: pointer; 
@@ -100,22 +117,40 @@
     function clearBoard() {
       socket.emit('clear_board');
     }
-
     const gridContainer = document.getElementById('grid');
-    for (let i = 0; i < 40; i++) {
-      const cell = document.createElement('div');
-      cell.classList.add('cell');
-      cells.push(cell); 
+    let cellIndex = 0; // 用來記住目前是第幾個格子 (0~39)
 
-      cell.onclick = function() {
-        let colorToSend = currentColor; 
-        if (localBoardState[i] === currentColor) {
-          colorToSend = 'white'; 
-        }
-        socket.emit('change_color', { index: i, color: colorToSend });
-      };
+    // 總共 10 列
+    for (let row = 1; row <= 10; row++) {
+      // 1. 先在每一列的最前面，塞入數字標籤 (1~10)
+      const label = document.createElement('div');
+      label.className = 'row-label';
+      label.innerText = row;
+      gridContainer.appendChild(label);
 
-      gridContainer.appendChild(cell);
+      // 2. 接著塞入這一列的 4 個格子
+      for (let col = 0; col < 4; col++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        
+        // 💡 為了避免閉包問題，我們把當下的格子編號存起來
+        let currentIndex = cellIndex; 
+        cells.push(cell); 
+
+        // 點擊事件：跟伺服器溝通依然是用 0~39 的編號
+        cell.onclick = function() {
+          let colorToSend = currentColor; 
+          if (localBoardState[currentIndex] === currentColor) {
+            colorToSend = 'white'; 
+          }
+          socket.emit('change_color', { index: currentIndex, color: colorToSend });
+        };
+
+        gridContainer.appendChild(cell);
+        
+        // 這一格處理完，編號加 1，準備處理下一格
+        cellIndex++; 
+      }
     }
 
     socket.on('init_board', (boardState) => {
